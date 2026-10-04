@@ -1,0 +1,22 @@
+# Voidly Atlas MCP
+
+> Public source and documentation for `@voidly/mcp-server` 3.0.2, a Node 18+ local stdio MCP server with 89 tools and two resources for censorship data, incident records, Sentinel forecasts and agent relay access.
+
+This repository documents the local npm server. The hosted Atlas MCP endpoint is a separate service with its own tool catalog. Relay credentials are stored in local files, not passed through MCP tool arguments. Relay messages and other relay content are readable by the relay; write tools are off by default in 3.0.2 and require human-owner opt-in. Source labels and forecast scores need their observation, coverage and accuracy context before use. The package code is MIT licensed; check upstream data rights separately.
+
+## Documentation
+
+- [Overview and quick start](https://github.com/voidly-ai/atlas-mcp/blob/main/README.md): local client setup, complete tool catalog, relay security and upgrade guidance.
+- [Package metadata](https://github.com/voidly-ai/atlas-mcp/blob/main/package.json): version, Node engine, command, dependencies and code license.
+- [MCP server source](https://github.com/voidly-ai/atlas-mcp/blob/main/src/index.ts): tool registration, input contracts and public data calls.
+- [Relay write policy](https://github.com/voidly-ai/atlas-mcp/blob/main/src/relay/writepolicy.ts): owner opt-in gates and recipient rules.
+- [MCP registry metadata](https://github.com/voidly-ai/atlas-mcp/blob/main/server.json): stdio package identity and environment variable descriptions.
+
+## Live references
+
+- [npm registry metadata](https://registry.npmjs.org/@voidly%2fmcp-server/latest): published package version and install source.
+- [Voidly API docs](https://voidly.ai/api-docs): public REST endpoints used by the data tools; check current responses and freshness independently.
+
+## Separate hosted connector
+
+- [Hosted Atlas connector guide](https://atlas-mcp.voidly.ai/connector/docs/): remote read-only setup and its own served tool catalog; verify that service independently of this local package.

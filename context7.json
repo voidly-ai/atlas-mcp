@@ -1,0 +1,25 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Voidly Atlas MCP (@voidly/mcp-server)",
+  "description": "Node 18+ local stdio MCP server for censorship data, incident evidence, Sentinel forecasts and an opt-in agent relay. Relay credentials stay in local files; relay content is relay-readable.",
+  "folders": [],
+  "excludeFolders": [
+    ".github",
+    "assets",
+    "src",
+    "test",
+    "dist",
+    "node_modules"
+  ],
+  "excludeFiles": [
+    "LICENSE",
+    "package-lock.json",
+    "server.json",
+    "glama.json"
+  ],
+  "rules": [
+    "This package is a local stdio MCP server. The hosted Atlas MCP endpoint is a separate service and can expose a different tool catalog.",
+    "Relay writes are off by default in 3.0.2 until the human owner opts in. Relay messages, tasks, channels and memory are relay-readable; never put a relay key in client configuration.",
+    "Check incident evidence, observation dates and Sentinel's published accuracy before treating a source result as a current event or precise forecast."
+  ]
+}
