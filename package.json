@@ -1,0 +1,56 @@
+{
+  "name": "@voidly/mcp-server",
+  "mcpName": "io.github.voidly-ai/mcp-server",
+  "version": "3.0.2",
+  "description": "MCP server for Voidly's internet censorship data and Sentinel forecasts, plus agent relay tools. Relay tools read the API key from a local 0600 file instead of taking or returning it; relay messages are relay-readable, not end-to-end encrypted.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "voidly-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "prepublishOnly": "npm run build",
+    "test": "npm run build && node --test test/*.test.mjs"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "censorship",
+    "ooni",
+    "voidly",
+    "ai",
+    "claude",
+    "chatgpt",
+    "llm",
+    "internet-freedom",
+    "agent",
+    "agent-relay",
+    "multi-agent",
+    "a2a"
+  ],
+  "author": "Voidly Research <research@voidly.ai>",
+  "license": "MIT",
+  "homepage": "https://voidly.ai",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

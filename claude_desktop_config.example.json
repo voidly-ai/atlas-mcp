@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "voidly": {
+      "command": "npx",
+      "args": ["@voidly/mcp-server"]
+    }
+  }
+}

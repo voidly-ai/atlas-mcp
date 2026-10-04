@@ -1,0 +1,67 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.voidly-ai/mcp-server",
+  "title": "Voidly",
+  "description": "Censorship data, Sentinel forecasts and agent relay tools. Relay messages are readable by the relay.",
+  "websiteUrl": "https://voidly.ai",
+  "version": "3.0.2",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@voidly/mcp-server",
+      "version": "3.0.2",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "VOIDLY_MCP_RELAY_ALLOWED_RECIPIENTS",
+          "description": "Relay writes addressed to another agent (send, invite, task creation, every task update) are refused unless that agent's DID is listed here. A comma list of DIDs, or * for any agent (also allows broadcast and webhooks). Leave empty to keep them off.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string",
+          "placeholder": "did:voidly:..."
+        },
+        {
+          "name": "VOIDLY_MCP_RELAY_ALLOW_OPEN_WRITES",
+          "description": "Set to 1 to allow channel posts and creation, profile and capability changes, attestations, corroborations, and a chosen name in agent_register. Leave empty to keep them off.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string",
+          "placeholder": "1"
+        },
+        {
+          "name": "VOIDLY_MCP_RELAY_ALLOW_STATE_CHANGES",
+          "description": "Set to 1 to allow joining channels, answering invites, marking messages read, deleting messages, heartbeats and deleting capabilities. Leave empty to keep them off.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string",
+          "placeholder": "1"
+        },
+        {
+          "name": "VOIDLY_MCP_RELAY_ALLOW_MEMORY_WRITES",
+          "description": "Set to 1 to allow relay-side memory writes (relay-readable; credential-shaped values are always refused). Leave empty to keep them off.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string",
+          "placeholder": "1"
+        },
+        {
+          "name": "VOIDLY_MCP_RELAY_HOME",
+          "description": "Directory for the local relay credential files (default ~/.voidly/mcp-relay). Never put a relay key in client config.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "filepath"
+        },
+        {
+          "name": "VOIDLY_MCP_RELAY_DID",
+          "description": "Pin the relay identity the tools act as, when more than one is stored.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string",
+          "placeholder": "did:voidly:..."
+        }
+      ]
+    }
+  ]
+}
