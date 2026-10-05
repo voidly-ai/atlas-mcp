@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "voidly-atlas-local": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@voidly/mcp-server@3.0.2"
+      ]
+    }
+  }
+}
