@@ -24,7 +24,7 @@ The hosted Atlas connector is a separate service at `https://atlas-mcp.voidly.ai
 Copy this install URI into a browser or the app. Review the server configuration before accepting it.
 
 ```text
-cursor://anysphere.cursor-deeplink/mcp/install?name=voidly-atlas-hosted&config=eyJ2b2lkbHktYXRsYXMtaG9zdGVkIjp7InVybCI6Imh0dHBzOi8vYXRsYXMtbWNwLnZvaWRseS5haS9tY3AifX0%3D
+cursor://anysphere.cursor-deeplink/mcp/install?name=voidly-atlas-hosted&config=eyJ1cmwiOiJodHRwczovL2F0bGFzLW1jcC52b2lkbHkuYWkvbWNwIn0%3D
 ```
 
 Cursor asks you to review the server before installing. To configure it manually, place `{"mcpServers":{"voidly-atlas-hosted":{"url":"https://atlas-mcp.voidly.ai/mcp"}}}` in `~/.cursor/mcp.json` or your project's `.cursor/mcp.json`.
