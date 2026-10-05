@@ -1,0 +1,29 @@
+name: Docker MCP smoke
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-mcp-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker-mcp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build reviewed Dockerfile
+        run: docker build --tag atlas-mcp:ci .
+      - name: Check stdio MCP protocol without network access
+        run: node test/docker-mcp-smoke.mjs atlas-mcp:ci
