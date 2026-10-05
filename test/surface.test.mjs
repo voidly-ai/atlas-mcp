@@ -133,7 +133,7 @@ const FORBIDDEN_TEXT = [
   /never passes through the model/i,
   /out of the model's reach/i,
   /not available to the model/i,
-  /voidly\.ai\/mcp\b/,
+  /(?:^|[^.\w-])voidly\.ai\/mcp\b/,
   /github\.com\/voidly-ai\/mcp-server/,
 ];
 
