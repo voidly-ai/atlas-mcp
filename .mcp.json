@@ -1,6 +1,7 @@
 {
   "mcpServers": {
     "voidly-atlas-local": {
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
