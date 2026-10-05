@@ -37,7 +37,7 @@ Copy this install URI into a browser or the app. Review the server configuration
 vscode:mcp/install?%7B%22name%22%3A%22voidly-atlas-hosted%22%2C%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fatlas-mcp.voidly.ai%2Fmcp%22%7D
 ```
 
-review the HTTP server configuration in VS Code. For a portable workspace file, use `{"mcpServers":{"voidly-atlas-hosted":{"type":"http","url":"https://atlas-mcp.voidly.ai/mcp"}}}` in root `.mcp.json`.
+For a portable workspace file, use `{"mcpServers":{"voidly-atlas-hosted":{"type":"http","url":"https://atlas-mcp.voidly.ai/mcp"}}}` in root `.mcp.json`.
 
 - **Claude Desktop / Claude account:** open **Customize → Connectors → Add custom connector** and enter `https://atlas-mcp.voidly.ai/mcp`. Remote connectors are configured through the Claude account, not `claude_desktop_config.json`.
 
