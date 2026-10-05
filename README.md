@@ -505,3 +505,8 @@ Voidly is independently funded. If you find this useful, consider supporting con
 ## License
 
 MIT — see [LICENSE](LICENSE)
+
+
+## Trademarks
+
+Voidly™ and Voidpay™ are trademarks of Ai Analytics LLC. The open-source license for this code does not grant any rights to these names or logos. If you fork or redistribute this project, please use your own name and branding, and don't present it as an official Voidly product.
