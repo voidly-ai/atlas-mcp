@@ -15,10 +15,38 @@ Model Context Protocol (MCP) server for the **Voidly censorship observatory**. I
 
 > **3.0.2 turns relay writes off by default.** Sending, task creation and every task update (status, output, rating), broadcasts, webhooks, channel and public writes, relay-side memory, and state changes another party can see (joining channels, answering invites, read marks, deletes, heartbeats, trust lookups) are refused until the human owner allows them in the environment. `agent_receive_messages` takes no `since` or `limit` unless `VOIDLY_MCP_RELAY_ALLOW_STATE_CHANGES=1`, and messages the relay confirms it cannot decrypt no longer hold up the inbox. Reading still works. 3.0.2 keeps 3.0.1's `get_incident_evidence` output. See [Upgrading from 3.0.1 or 3.0.0](#upgrading-from-301-or-300).
 
+## Hosted Atlas (four public reads)
+
+The hosted Atlas connector is a separate service at `https://atlas-mcp.voidly.ai/mcp`. It exposes `voidly_incident_stats`, `voidly_incident_detail`, `voidly_country_data`, and `voidly_measurement_summary`. It does not provide the local package's 89-tool catalog or relay tools. Check the observation date and source coverage before treating a result as current.
+
+### Add hosted Atlas to Cursor
+
+Copy this install URI into a browser or the app. Review the server configuration before accepting it.
+
+```text
+cursor://anysphere.cursor-deeplink/mcp/install?name=voidly-atlas-hosted&config=eyJ1cmwiOiJodHRwczovL2F0bGFzLW1jcC52b2lkbHkuYWkvbWNwIn0%3D
+```
+
+Cursor asks you to review the server before installing. To configure it manually, place `{"mcpServers":{"voidly-atlas-hosted":{"url":"https://atlas-mcp.voidly.ai/mcp"}}}` in `~/.cursor/mcp.json` or your project's `.cursor/mcp.json`.
+
+### Install hosted Atlas in VS Code
+
+Copy this install URI into a browser or the app. Review the server configuration before accepting it.
+
+```text
+vscode:mcp/install?%7B%22name%22%3A%22voidly-atlas-hosted%22%2C%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fatlas-mcp.voidly.ai%2Fmcp%22%7D
+```
+
+For a portable workspace file, use `{"mcpServers":{"voidly-atlas-hosted":{"type":"http","url":"https://atlas-mcp.voidly.ai/mcp"}}}` in root `.mcp.json`.
+
+- **Claude Desktop / Claude account:** open **Customize → Connectors → Add custom connector** and enter `https://atlas-mcp.voidly.ai/mcp`. Remote connectors are configured through the Claude account, not `claude_desktop_config.json`.
+
+The repository's root `.mcp.json` below is for the **local** `@voidly/mcp-server@3.0.2` stdio package. Use only the connection whose tool catalog you want.
+
 ## Quick Start
 
 ```bash
-npx @voidly/mcp-server
+npx -y @voidly/mcp-server@3.0.2
 ```
 
 ### Claude Desktop
@@ -30,7 +58,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "voidly": {
       "command": "npx",
-      "args": ["@voidly/mcp-server"]
+      "args": ["-y", "@voidly/mcp-server@3.0.2"]
     }
   }
 }
@@ -45,7 +73,7 @@ Add to `.cursor/mcp.json`:
   "mcpServers": {
     "voidly": {
       "command": "npx",
-      "args": ["@voidly/mcp-server"]
+      "args": ["-y", "@voidly/mcp-server@3.0.2"]
     }
   }
 }
@@ -60,7 +88,7 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
   "mcpServers": {
     "voidly": {
       "command": "npx",
-      "args": ["@voidly/mcp-server"]
+      "args": ["-y", "@voidly/mcp-server@3.0.2"]
     }
   }
 }
