@@ -41,7 +41,7 @@ For a portable workspace file, use `{"mcpServers":{"voidly-atlas-hosted":{"type"
 
 - **Claude Desktop / Claude account:** open **Customize → Connectors → Add custom connector** and enter `https://atlas-mcp.voidly.ai/mcp`. Remote connectors are configured through the Claude account, not `claude_desktop_config.json`.
 
-The repository's root `.mcp.json` below is for the **local** `@voidly/mcp-server@3.0.2` stdio package. Use only the connection whose tool catalog you want.
+The repository's root `.mcp.json` offers both **hosted Atlas** (four public reads) and the pinned local `@voidly/mcp-server@3.0.2` stdio package (a different tool catalog). Enable only the connection whose tools you want.
 
 ## Quick Start
 
