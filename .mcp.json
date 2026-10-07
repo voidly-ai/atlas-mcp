@@ -7,6 +7,10 @@
         "-y",
         "@voidly/mcp-server@3.0.2"
       ]
+    },
+    "voidly-atlas-hosted": {
+      "type": "http",
+      "url": "https://atlas-mcp.voidly.ai/mcp"
     }
   }
 }
