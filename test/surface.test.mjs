@@ -205,7 +205,12 @@ test('package and registry descriptions carry none of the retired claims', () =>
   for (const [where, text] of [['package.json', JSON.stringify(PKG)], ['server.json', JSON.stringify(SERVER_JSON)]]) {
     for (const re of FORBIDDEN_TEXT) assert.ok(!re.test(text), `${where} carries ${re}`);
   }
-  assert.equal(PKG.repository, undefined, 'no link to a repository readers cannot open');
+  assert.deepEqual(PKG.repository, {
+    type: 'git', url: 'git+https://github.com/voidly-ai/atlas-mcp.git',
+  }, 'npm points to the public Atlas source');
+  assert.deepEqual(PKG.bugs, {
+    url: 'https://github.com/voidly-ai/atlas-mcp/issues',
+  }, 'npm points to the Atlas issue tracker');
   assert.equal(SERVER_JSON.repository, undefined, 'no link to a repository readers cannot open');
 });
 

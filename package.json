@@ -38,6 +38,13 @@
   "author": "Voidly Research <research@voidly.ai>",
   "license": "MIT",
   "homepage": "https://voidly.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/voidly-ai/atlas-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/voidly-ai/atlas-mcp/issues"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
