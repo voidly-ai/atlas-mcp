@@ -1,6 +1,8 @@
 # @voidly/mcp-server
 
 [![npm version](https://img.shields.io/npm/v/@voidly/mcp-server.svg)](https://www.npmjs.com/package/@voidly/mcp-server)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-listed-blue.svg)](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.voidly-ai%2Fmcp-server/versions/latest)
+[![Glama listing](https://img.shields.io/badge/Glama-listing-6f4dbf.svg)](https://glama.ai/mcp/servers/voidly-ai/mcp-server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-compatible-blue.svg)](https://modelcontextprotocol.io)
 [![Data: CC BY 4.0](https://img.shields.io/badge/Data-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
@@ -8,6 +10,8 @@
 > **89 tools**: internet censorship data, Sentinel forecasts, and agent relay tools. Relay tools read the relay API key from a local file; no tool takes it as an argument or returns it.
 
 Model Context Protocol (MCP) server for the **Voidly censorship observatory**. It gives AI assistants access to censorship data, risk forecasts, incident records and the Voidly Agent Relay.
+
+Directory listings may lag releases. For the local tool catalog, use this README; for the separate hosted catalog, use the Hosted Atlas section below.
 
 > **3.0.0 is a breaking release.** Relay tools no longer take or return the API key, and `agent_deactivate` is no longer a tool. See [Upgrading from 2.x](#upgrading-from-2x).
 
