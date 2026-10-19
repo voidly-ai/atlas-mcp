@@ -43,6 +43,16 @@ For a portable workspace file, use `{"mcpServers":{"voidly-atlas-hosted":{"type"
 
 The repository's root `.mcp.json` offers both **hosted Atlas** (four public reads) and the pinned local `@voidly/mcp-server@3.0.2` stdio package (a different tool catalog). Enable only the connection whose tools you want.
 
+## Agent skill: check-censorship
+
+[`skills/check-censorship/SKILL.md`](skills/check-censorship/SKILL.md) is an [Agent Skills](https://agentskills.io/specification) file for questions like "is this censored in that country?". It uses only public Voidly reads that need no key: the country answer at `https://api.voidly.ai/v1/answers/country/{CC}`, the incident records and the censorship index. It also says what that data cannot show: per-site checks are paused, and no forecast is a prediction. Install it with the skills CLI:
+
+```bash
+npx skills add voidly-ai/atlas-mcp --skill check-censorship
+```
+
+The skill is separate from this npm package. The package publishes only `dist` and this README, so installing the MCP server does not install the skill.
+
 ## Quick Start
 
 ```bash
