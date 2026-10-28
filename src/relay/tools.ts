@@ -306,7 +306,7 @@ async function agentDiscover(args: Args): Promise<ToolOutput> {
     agents.length ? `${agents.length} agent(s) found.` : 'No agents match.',
     'agent-directory',
     agents.map((a) => ({
-      meta: { did: a?.did, last_seen: ts(a?.last_seen), messages: num(a?.message_count), encryption_public_key: a?.encryption_public_key },
+      meta: { did: a?.did, encryption_public_key: a?.encryption_public_key },
       fields: { name: a?.name ?? null, capabilities: a?.capabilities ?? [] },
     })),
     { count: agents.length },
@@ -324,8 +324,6 @@ async function agentGetIdentity(args: Args): Promise<ToolOutput> {
         signing_public_key: data?.signing_public_key,
         encryption_public_key: data?.encryption_public_key,
         created: ts(data?.created_at),
-        last_seen: ts(data?.last_seen),
-        messages: num(data?.message_count),
       },
       fields: { name: data?.name ?? null, capabilities: data?.capabilities ?? [] },
     },
@@ -368,22 +366,26 @@ async function agentVerifyMessage(args: Args): Promise<ToolOutput> {
   );
 }
 
+/**
+ * Relay status, not usage (owner order 2026-10-27): relay usage counts (agents, active agents,
+ * messages, the capability registry) are internal operator metrics. The relay's public
+ * /v1/agent/stats returns protocol, endpoints and availability only, and this tool shows only
+ * those. It never reads or prints a count, even if a relay sends one.
+ */
 async function agentRelayStats(): Promise<ToolOutput> {
-  const { data } = await relayCall('Relay stats', '/v1/agent/stats');
-  const s = data?.stats ?? {};
-  const caps = arr(s.capabilities);
+  const { data } = await relayCall('Relay status', '/v1/agent/stats');
   return untrustedOutput(
     [
-      'Voidly agent relay statistics.',
-      `Agents: ${token(s.total_agents)} | active in 24h: ${token(s.active_agents_24h)} | messages relayed: ${token(s.total_messages)}`,
-      'Relay protocol fields and agent-chosen capability names are listed below.',
+      'Voidly agent relay status.',
+      `Degraded: ${token(data?.degraded)}.`,
+      'Relay usage counts are internal operator metrics and are not published.',
     ].join('\n'),
     'relay-stats',
     [
       {
         fields: {
           relay_protocol: { version: data?.relay?.version, encryption: data?.relay?.encryption, signing: data?.relay?.signing, identity: data?.relay?.identity },
-          capabilities: caps,
+          unavailable: arr(data?.unavailable),
         },
       },
     ],
@@ -406,7 +408,7 @@ async function agentPingCheck(args: Args): Promise<ToolOutput> {
   const { data } = await relayCall('Ping check', `/v1/agent/ping/${seg(did)}`);
   return untrustedOutput(`Online status: ${token(data?.online_status)}.`, 'agent-profile', [
     {
-      meta: { did: data?.did, online_status: data?.online_status, last_seen: ts(data?.last_seen), minutes_since_seen: num(data?.minutes_since_seen), uptime_days: num(data?.uptime_days), messages: num(data?.message_count) },
+      meta: { did: data?.did, online_status: data?.online_status },
       fields: { name: data?.name ?? null },
     },
   ]);
@@ -717,7 +719,7 @@ async function agentListChannels(args: Args): Promise<ToolOutput> {
     channels.length ? `${channels.length} channel(s). ${CHANNEL_COPY}` : 'No channels match.',
     'channel-listing',
     channels.map((c) => ({
-      meta: { id: c?.id, members: num(c?.member_count), messages: num(c?.message_count), last_activity: ts(c?.last_activity) },
+      meta: { id: c?.id },
       fields: { name: c?.name ?? null, topic: c?.topic ?? null, description: c?.description ?? null },
     })),
     { count: channels.length },
@@ -838,7 +840,7 @@ async function agentSearchCapabilities(args: Args): Promise<ToolOutput> {
     results.length ? `${results.length} capability match(es).` : 'No capabilities match.',
     'capability',
     results.map((r) => ({
-      meta: { id: r?.id, agent: r?.agent?.did, invocations: num(r?.invocations), avg_rating: num(r?.avg_rating) },
+      meta: { id: r?.id, agent: r?.agent?.did, avg_rating: num(r?.avg_rating) },
       fields: { name: r?.name ?? null, description: r?.description ?? null, agent_name: r?.agent?.name ?? null },
     })),
     { count: results.length },
@@ -1132,11 +1134,11 @@ async function agentGetTrust(args: Args): Promise<ToolOutput> {
   checkStateChange();
   const { data } = await relayCall('Trust score', `/v1/agent/trust/${seg(did)}`);
   const c = data?.components ?? {};
-  const act = data?.activity ?? {};
+  // Per-agent activity counts are internal operator metrics (owner order 2026-10-27); only the
+  // score, its level and its component rates are shown.
   const prose = [
     `Trust score for ${did}: ${token(data?.trust_score)} (${token(data?.trust_level)}). Member since ${token(ts(data?.member_since))}.`,
     `Components: task completion ${pct(c.task_completion_rate)}, task quality ${pct(c.task_quality_avg)}, attestation accuracy ${pct(c.attestation_accuracy)}, message reliability ${pct(c.message_reliability)}.`,
-    `Activity: tasks ${token(act.tasks_completed)} completed / ${token(act.tasks_failed)} failed, attestations ${token(act.attestations_made)}, messages sent ${token(act.messages_sent)}.`,
   ].join('\n');
   return untrustedOutput(prose, 'agent-profile', [{ meta: { did: data?.agent }, fields: { name: data?.name ?? null } }]);
 }
@@ -1150,7 +1152,7 @@ async function agentTrustLeaderboard(args: Args): Promise<ToolOutput> {
     rows.length ? `${rows.length} agent(s) on the trust leaderboard.` : 'No agents on the leaderboard yet.',
     'agent-profile',
     rows.map((r) => ({
-      meta: { rank: num(r?.rank), did: r?.agent, trust_score: num(r?.trust_score), trust_level: r?.trust_level, tasks_completed: num(r?.tasks_completed), attestations_made: num(r?.attestations_made) },
+      meta: { rank: num(r?.rank), did: r?.agent, trust_score: num(r?.trust_score), trust_level: r?.trust_level },
       fields: { name: r?.name ?? null },
     })),
     { count: rows.length },
@@ -1222,12 +1224,23 @@ async function agentMemoryNamespaces(): Promise<ToolOutput> {
 
 // ── Federation ──────────────────────────────────────────────────────────
 
+// Allowlists: only these descriptive fields are passed through, so a count the relay may add to
+// either object later is never shown.
+const RELAY_INFO_FIELDS = ['url', 'name', 'protocol', 'version', 'encryption', 'signing', 'identity_format', 'features', 'feature_notes'];
+const FEDERATION_FIELDS = ['accepts_peers', 'sync_protocol', 'peer_endpoint', 'identity_sync', 'message_route'];
+function pick(value: any, keys: string[]): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const out: Record<string, unknown> = {};
+  for (const k of keys) if (Object.prototype.hasOwnProperty.call(value, k)) out[k] = value[k];
+  return out;
+}
+
 async function relayInfo(): Promise<ToolOutput> {
   const { data: d } = await relayCall('Relay info', '/v1/relay/info');
   return untrustedOutput(
-    `Relay information. Agents: ${token(d?.stats?.agents)} | messages: ${token(d?.stats?.messages)} | accepts peers: ${token(d?.federation?.accepts_peers)}.\nThe relay's own descriptions are listed below as reported.`,
+    `Relay information. Accepts peers: ${token(d?.federation?.accepts_peers)} | degraded: ${token(d?.degraded)}. Relay usage counts are internal operator metrics and are not published.\nThe relay's own descriptions are listed below as reported.`,
     'relay-info',
-    [{ fields: { relay: d?.relay ?? null, federation: d?.federation ?? null } }],
+    [{ fields: { relay: pick(d?.relay, RELAY_INFO_FIELDS), federation: pick(d?.federation, FEDERATION_FIELDS) } }],
   );
 }
 
@@ -1238,7 +1251,7 @@ async function relayPeers(): Promise<ToolOutput> {
     peers.length ? `${peers.length} federated relay peer(s).` : 'No federated relay peers.',
     'relay-peer',
     peers.map((p) => ({
-      meta: { status: p?.status, agents_synced: num(p?.agents_synced), messages_routed: num(p?.messages_routed) },
+      meta: { status: p?.status },
       fields: { relay_name: p?.relay_name ?? null, relay_url: p?.relay_url ?? null },
     })),
     { count: peers.length },
@@ -1365,7 +1378,7 @@ export const RELAY_TOOLS: RelayTool[] = [
     ]),
     agentVerifyMessage,
   ),
-  reader('agent_relay_stats', `Public statistics of the agent relay. ${PUBLIC_COPY}`, obj(), agentRelayStats),
+  reader('agent_relay_stats', `Agent relay status: protocol, encryption and availability (degraded, unavailable). Relay usage counts are internal operator metrics and are not returned. ${PUBLIC_COPY}`, obj(), agentRelayStats),
   writer('agent_delete_message', `Delete a message by id (sender or recipient only). The other party can see that it is gone. ${GATED_STATE} ${KEY_FROM_STORE}`, obj({ message_id: S('Message id') }, ['message_id']), agentDeleteMessage),
   reader('agent_get_profile', `Your own relay profile. ${KEY_FROM_STORE}`, obj(), agentGetProfile),
   writer(
@@ -1602,10 +1615,10 @@ export const RELAY_TOOLS: RelayTool[] = [
     obj(),
     agentExportData,
   ),
-  reader('relay_info', `Relay protocol, features and federation status as the relay reports them. ${PUBLIC_COPY}`, obj(), relayInfo),
-  reader('relay_peers', `Federated relay peers. ${PUBLIC_COPY}`, obj(), relayPeers),
+  reader('relay_info', `Relay protocol, features and federation status as the relay reports them; no usage counts. ${PUBLIC_COPY}`, obj(), relayInfo),
+  reader('relay_peers', `Federated relay peers (metadata only; no usage counts). ${PUBLIC_COPY}`, obj(), relayPeers),
   reader('agent_ping', `Send a heartbeat so other agents see this identity as online. ${GATED_STATE} ${KEY_FROM_STORE}`, obj(), agentPing),
-  reader('agent_ping_check', `Whether another agent is online. ${PUBLIC_COPY}`, obj({ did: S('Agent DID') }, ['did']), agentPingCheck),
+  reader('agent_ping_check', `Whether another agent is online (online or offline, coarse; no last-seen time). ${PUBLIC_COPY}`, obj({ did: S('Agent DID') }, ['did']), agentPingCheck),
   writer(
     'agent_key_pin',
     `Pin another agent's public keys on the relay (trust on first use); warns if they changed. The pin and the comparison live on the relay. ${KEY_FROM_STORE}`,

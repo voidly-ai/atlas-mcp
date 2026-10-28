@@ -1,7 +1,7 @@
 {
   "name": "@voidly/mcp-server",
   "mcpName": "io.github.voidly-ai/mcp-server",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "MCP server for Voidly's internet censorship data and Sentinel forecasts, plus agent relay tools. Relay tools read the API key from a local 0600 file instead of taking or returning it; relay messages are relay-readable, not end-to-end encrypted.",
   "type": "module",
   "main": "dist/index.js",

@@ -39,7 +39,7 @@ const COUNTRY_NAMES: Record<string, string> = {
   NZ: 'New Zealand', HK: 'Hong Kong', TW: 'Taiwan', SG: 'Singapore' };
 
 // MCP server version — used in User-Agent and server metadata
-const MCP_VERSION = '3.0.2';
+const MCP_VERSION = '3.0.3';
 
 // Fetch helper with error handling and timeout
 async function fetchJson<T>(url: string): Promise<T> {
@@ -1289,38 +1289,50 @@ async function getIncidentReport(incidentId: string, format: string = 'markdown'
   return result;
 }
 
+// Volunteer probe counts (nodes, per-node measurement and confirmation totals) are internal
+// operator metrics (owner order 2026-10-27). These tools list nodes without totals or counts.
+// While the community listing is on its privacy hold the API answers 403 or 503; say so
+// plainly instead of returning an error page.
+const COMMUNITY_WITHHELD =
+  `# Community Probes\n\nThe community probe listing is withheld (Voidly privacy hold) or unavailable right now, so there is nothing to show. ` +
+  `Censorship findings stay public through the incident and evidence tools.\n\n` +
+  `Run a probe: \`pip install voidly-probe && voidly-probe --consent\`\n`;
+function withheldOrThrow(error: unknown): null {
+  if (error instanceof Error && /^API request failed: (403|503)\b/.test(error.message)) return null;
+  throw error;
+}
+
 async function getCommunityProbes(): Promise<string> {
   const data = await fetchJson<{
-    total: number;
-    nodes: Array<{
+    nodes?: Array<{
       id: string;
       country: string;
       city: string;
       trustScore: number;
-      totalProbes: number;
-      blockedConfirmed: number;
-      lastSeen: string;
       status: string;
     }>;
-  }>(`${VOIDLY_API}/v1/community/nodes?limit=50`);
+  } | null>(`${VOIDLY_API}/v1/community/nodes?limit=50`).catch(withheldOrThrow);
+  if (data === null) return COMMUNITY_WITHHELD;
 
   let result = `# Community Probe Network\n\n`;
-  result += `**Total Nodes:** ${data.total}\n\n`;
+  const nodes = Array.isArray(data.nodes) ? data.nodes : [];
 
-  if (data.nodes.length === 0) {
-    result += `No community probe nodes currently active.\n`;
+  if (nodes.length === 0) {
+    result += `No community probe nodes are listed.\n`;
     result += `\nRun your own: \`pip install voidly-probe && voidly-probe --consent\`\n`;
   } else {
-    result += `## Active Nodes\n\n`;
-    result += `| Node | Location | Trust | Probes | Confirmed | Status |\n`;
-    result += `|------|----------|-------|--------|-----------|--------|\n`;
+    result += `## Nodes\n\n`;
+    result += `| Node | Location | Trust | Status |\n`;
+    result += `|------|----------|-------|--------|\n`;
 
-    for (const node of data.nodes) {
+    for (const node of nodes) {
       const countryName = COUNTRY_NAMES[node.country] || node.country;
       const statusEmoji = node.status === 'active' ? '🟢' : '🔴';
-      result += `| ${node.id} | ${node.city}, ${countryName} | ${node.trustScore.toFixed(2)} | ${node.totalProbes} | ${node.blockedConfirmed} | ${statusEmoji} ${node.status} |\n`;
+      const trust = typeof node.trustScore === 'number' ? node.trustScore.toFixed(2) : 'n/a';
+      result += `| ${node.id} | ${node.city}, ${countryName} | ${trust} | ${statusEmoji} ${node.status} |\n`;
     }
   }
+  result += `\nVolunteer probe counts are internal operator metrics and are not published.\n`;
 
   result += `\n## Join the Network\n`;
   result += `- Install: \`pip install voidly-probe\`\n`;
@@ -1333,31 +1345,33 @@ async function getCommunityProbes(): Promise<string> {
 
 async function getCommunityLeaderboard(): Promise<string> {
   const data = await fetchJson<{
-    leaderboard: Array<{
+    leaderboard?: Array<{
       rank: number;
       nodeId: string;
       country: string;
-      totalProbes: number;
-      blockedConfirmed: number;
       trustScore: number;
     }>;
-  }>(`${VOIDLY_API}/v1/community/leaderboard`);
+  } | null>(`${VOIDLY_API}/v1/community/leaderboard`).catch(withheldOrThrow);
+  if (data === null) return COMMUNITY_WITHHELD;
 
   let result = `# Community Probe Leaderboard\n\n`;
+  const rows = Array.isArray(data.leaderboard) ? data.leaderboard : [];
 
-  if (!data.leaderboard || data.leaderboard.length === 0) {
-    result += `No community probes have submitted data yet.\n`;
-    result += `Be the first: \`pip install voidly-probe && voidly-probe --consent\`\n`;
+  if (rows.length === 0) {
+    result += `No community probes are listed.\n`;
+    result += `Run one: \`pip install voidly-probe && voidly-probe --consent\`\n`;
   } else {
-    result += `## Top Contributors\n\n`;
-    result += `| Rank | Node | Country | Probes | Confirmed | Trust |\n`;
-    result += `|------|------|---------|--------|-----------|-------|\n`;
+    result += `## Contributors\n\n`;
+    result += `| Rank | Node | Country | Trust |\n`;
+    result += `|------|------|---------|-------|\n`;
 
-    for (const entry of data.leaderboard.slice(0, 20)) {
+    for (const entry of rows.slice(0, 20)) {
       const countryName = COUNTRY_NAMES[entry.country] || entry.country;
-      result += `| ${entry.rank} | ${entry.nodeId} | ${countryName} | ${entry.totalProbes} | ${entry.blockedConfirmed} | ${entry.trustScore.toFixed(2)} |\n`;
+      const trust = typeof entry.trustScore === 'number' ? entry.trustScore.toFixed(2) : 'n/a';
+      result += `| ${entry.rank} | ${entry.nodeId} | ${countryName} | ${trust} |\n`;
     }
   }
+  result += `\nVolunteer probe counts are internal operator metrics and are not published.\n`;
 
   result += `\n## Source\nData: Voidly Community Probe Network\nLicense: CC BY 4.0\n`;
   return result;
@@ -1404,19 +1418,13 @@ async function getIncidentStats(): Promise<string> {
   return result;
 }
 
+// Alert subscription and delivery counts are internal operator metrics (owner order
+// 2026-10-27). The public /api/alerts/stats is count-free, so this tool makes no request: it
+// says how to subscribe and can never print a count.
 async function getAlertStats(): Promise<string> {
-  const data = await fetchJson<{
-    activeSubscriptions: number;
-    totalDeliveries24h: number;
-    webhookSuccessRate: number;
-    countriesMonitored: number;
-  }>(`${VOIDLY_API}/api/alerts/stats`);
-
-  let result = `# Alert System Statistics\n\n`;
-  result += `**Active Subscriptions:** ${data.activeSubscriptions}\n`;
-  result += `**Deliveries (24h):** ${data.totalDeliveries24h}\n`;
-  result += `**Webhook Success Rate:** ${(data.webhookSuccessRate * 100).toFixed(1)}%\n`;
-  result += `**Countries Monitored:** ${data.countriesMonitored}\n\n`;
+  let result = `# Alert System\n\n`;
+  result += `Voidly sends signed webhook alerts for new censorship incidents (per country, minimum severity).\n`;
+  result += `Subscription and delivery counts are internal operator metrics and are not published.\n\n`;
 
   result += `## Subscribe\n`;
   result += `Set up webhook alerts at: https://voidly.ai/api-docs#alerts-webhooks\n\n`;
@@ -1722,14 +1730,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ['incident_id'] } },
     {
       name: 'get_community_probes',
-      description: 'List active community probe nodes in Voidly\'s open probe network. Shows node locations, trust scores, and measurement counts. Anyone can run a probe via `pip install voidly-probe`.',
+      description: 'List community probe nodes in Voidly\'s open probe network: node locations, trust scores and status. Volunteer probe counts are internal operator metrics and are not returned. The listing is currently withheld (privacy hold); the tool says so. Anyone can run a probe via `pip install voidly-probe`.',
       inputSchema: {
         type: 'object' as const,
         properties: {},
         required: [] } },
     {
       name: 'get_community_leaderboard',
-      description: 'Get the community probe leaderboard. Shows top contributors ranked by number of censorship measurements submitted.',
+      description: 'Get the community probe leaderboard: contributor nodes with rank, country and trust score. Per-node measurement counts are internal operator metrics and are not returned. The listing is currently withheld (privacy hold); the tool says so.',
       inputSchema: {
         type: 'object' as const,
         properties: {},
@@ -1743,7 +1751,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: [] } },
     {
       name: 'get_alert_stats',
-      description: 'Get public statistics about Voidly\'s real-time alert system. Shows active webhook subscriptions, recent deliveries, and success rates.',
+      description: 'Get information about Voidly\'s real-time alert system and how to subscribe to webhook alerts. Subscription and delivery counts are internal operator metrics and are not returned.',
       inputSchema: {
         type: 'object' as const,
         properties: {},
