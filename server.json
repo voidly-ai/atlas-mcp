@@ -4,12 +4,12 @@
   "title": "Voidly",
   "description": "Censorship data, Sentinel forecasts and agent relay tools. Relay messages are readable by the relay.",
   "websiteUrl": "https://voidly.ai",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@voidly/mcp-server",
-      "version": "3.0.2",
+      "version": "3.0.3",
       "transport": {
         "type": "stdio"
       },

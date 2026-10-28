@@ -175,7 +175,7 @@ test('resources: no Pay resource', async () => {
 });
 
 test('server reports the package version, and every version string agrees', async () => {
-  assert.equal(PKG.version, '3.0.2');
+  assert.equal(PKG.version, '3.0.3');
   assert.equal(SERVER_JSON.version, PKG.version);
   for (const p of SERVER_JSON.packages) assert.equal(p.version, PKG.version);
   await withServer(async (srv) => {
